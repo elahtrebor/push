@@ -11,6 +11,7 @@ Copy the push.py file on the device and save as push.py
 Then from the micropython cli "import push"
 It has a quick wifi connect built in, a crude editor that works similiar to cat'ng text into the console, 
 wget (that works like curl), an ntp sync tool.
+exec will run a python script.
 
 Make sure you use the absolute path when working with directories and files or shell may crash.
 
@@ -19,9 +20,8 @@ No pipes yet. No switches or flags.
 
 if the shell crashes then you may have to restart it with "import push" and "push.shell()"
 
+
 Here is the output of a test drive:
-
-
 
 MicroPython v1.19.1-773-g988b6e2da on 2022-12-15; ESP32 module with ESP32
 
@@ -87,5 +87,18 @@ $wget https://www.ntppool.org/en/
   
 You can install other libraries from github using wget://yourgithublink  > /lib/yourfilename.py
   
-  
+  Example (Download uping and ping a network host):
+$cd /lib  
+$wget https://gist.githubusercontent.com/shawwwn/91cc8979e33e82af6d99ec34c38195fb/raw/ca2e629a54abcb18b1c4f766d594507cea41289a/uping.py > uping.py
+$
+$cd ..
+..
+$exec uping.ping("192.168.1.190")
+PING 192.168.1.190 (192.168.1.190): 64 data bytes
+84 bytes from 192.168.1.190: icmp_seq=1, ttl=64, time=19.888000 ms
+84 bytes from 192.168.1.190: icmp_seq=2, ttl=64, time=25.198000 ms
+84 bytes from 192.168.1.190: icmp_seq=3, ttl=64, time=16.527000 ms
+84 bytes from 192.168.1.190: icmp_seq=4, ttl=64, time=10.604000 ms
+4 packets transmitted, 4 packets received
+$
  

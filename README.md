@@ -65,3 +65,24 @@ $pwd
 /lib
 
 
+$wget https://www.ntppool.org/en/
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+<title>pool.ntp.org: the internet cluster of ntp servers</title>
+
+<script>
+  if (!NP) var NP = {};
+</script>
+
+<link rel="stylesheet" href="https://st.pimg.net/ntppool/.g/common.v60ac5d8cf9.css" type="text/css">
+ 
+		
+<-- truncated for berevity demo-->
+  
+  
+You can install other libraries from github using wget://yourgithublink  > /lib/yourfilename.py
+  
+  
+ 

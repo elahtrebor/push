@@ -1,3 +1,4 @@
+#This code is as free as the word free..
 import os
 import re
 import sys

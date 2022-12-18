@@ -100,6 +100,27 @@ def shell():
      input1 = input1.strip('\n')
      os.rmdir(input1)
      output = ("Removed " + input1 + ".\n")
+   elif re.search('^exec ', input1):
+     input1 = input1.replace("exec ", '')
+     input1 = input1.strip('\n')
+     if re.search('\.',input1):
+        module = re.search('^(.*?)\.', input1).group(1)
+        input1 = input1.replace(module + ".","")
+        func = re.search('^(.*?)\(', input1).group(1)
+        args = re.search('\((.*?)\)', input1).group(1)
+        #print("module is: " + module + "\n")
+        #print("func is: " + func + "\n")
+        #print("args is: " + args + "\n")
+        
+        try:
+          script = getattr(__import__(module), func)
+          if not args:
+              script()
+          else:
+              args = args.replace('"', "")
+              script(args)
+        except:
+          output = "Error: Check Syntax\n"
    elif re.search('^rm ', input1):
      input1 = input1.replace("rm ", '')
      input1 = input1.strip('\n')

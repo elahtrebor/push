@@ -37,7 +37,10 @@ def shell():
    elif re.search('^ls',input1):
      input1 = input1.replace("ls", '')
      input1 = input1.strip()
-     output = ("\n".join(os.listdir(input1)))
+     if re.search('\S+',input1):
+       output = ("\n".join(os.listdir(input1)))
+     else:
+       output = ("\n".join(os.listdir()))
    elif re.search('^uname',input1):
      output = ("\n".join(os.uname()))
    elif re.search('^df',input1):
@@ -68,9 +71,14 @@ def shell():
      output = ("File " + source + " copied.")
    elif re.search('^cd', input1):
      input1 = input1.replace("cd ", '')
+     if re.search('\S+', input1) and not re.search('/',input1):
+         input1 = "./" + input1
      input1 = input1.strip('\n')
-     os.chdir(input1)
-     output = input1
+     try:
+      os.chdir(input1)
+      output = input1
+     except:
+      output = ("Error. Couldn't cd\n")
    elif re.search('^clear', input1):
     print("\x1B\x5B2J", end="")
     print("\x1B\x5BH", end="")

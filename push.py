@@ -72,17 +72,11 @@ def shell():
      output = ("File " + source + " copied.")
    elif re.search('^cd', input1):
      input1 = input1.replace("cd ", '')
-     if re.search('\S+', input1) and not re.search('/',input1):
-         input1 = "./" + input1
-     input1 = input1.strip('\n')
      try:
       os.chdir(input1)
       output = input1
      except:
       output = ("Error. Couldn't cd\n")
-   elif re.search('^clear', input1):
-    print("\x1B\x5B2J", end="")
-    print("\x1B\x5BH", end="")
    elif re.search('^mkdir', input1):
      input1 = input1.replace("mkdir ", '')
      input1 = input1.strip('\n')

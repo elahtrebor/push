@@ -67,7 +67,6 @@ lib
 $pwd
 /lib
 
-
 $wget https://www.ntppool.org/en/
 <!DOCTYPE html>
 <html lang="en">
@@ -82,8 +81,7 @@ $wget https://www.ntppool.org/en/
 <link rel="stylesheet" href="https://st.pimg.net/ntppool/.g/common.v60ac5d8cf9.css" type="text/css">
  
 		
-<-- truncated for berevity demo-->
-  
+<-- truncated for berevity demo-->  
   
 You can install other libraries from github using wget://yourgithublink  > /lib/yourfilename.py
   

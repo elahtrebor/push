@@ -21,13 +21,13 @@ So for instance to call test.py with function hello():
 place test.py in the lib directory and from the shell
 call it with  "exec test.hello()"
 
-Its recommended to use the absolute path when working with directories and files or shell may crash.
+Its recommended to use the absolute path when working with directories and files.
 
 Supports ls, cat, cd, pwd, mkdir, rmdir, rm, cp, ifconfig, wget(works like curl),  
 and redirect ">".
 No pipes yet. No switches or flags.
 
-if the shell crashes then you can restart it with "import push" and "push.shell()"
+if for some reason the shell crashes then you can restart it with "import push" and "push.shell()"
 
 Here is the output of a test drive:
 

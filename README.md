@@ -102,4 +102,43 @@ PING 192.168.1.190 (192.168.1.190): 64 data bytes
 84 bytes from 192.168.1.190: icmp_seq=4, ttl=64, time=10.604000 ms
 4 packets transmitted, 4 packets received
 $
- 
+
+
+$uname
+esp32
+esp32
+1.19.1
+v1.19.1-773-g988b6e2da on 2022-12-15
+ESP32 module with ESP32
+
+
+
+$ntpsync
+time sync'd with: pool.ntp.org
+(2022, 12, 18, 23, 57, 4, 6, 352)
+
+
+
+$
+$cd tmp
+tmp
+$
+$edit test.txt
+EDIT MODE DETECTED...
+
+(ENTER STOPEDIT to stop)
+
+this
+is
+a
+test
+STOPEDIT
+File test.txt created..
+
+$cat test.txt
+this
+is
+a
+test
+
+

@@ -65,21 +65,27 @@ def shell():
    elif re.search('^cat', input1):
      input1 = input1.replace("cat ", '')
      input1 = input1.strip('\n')
-     file1 = open(input1, "r")
-     output = file1.read()
-     file1.close()
+     try:
+      file1 = open(input1, "r")
+      output = file1.read()
+      file1.close()
+     except:
+         output = "Couldn't open file\n"
    elif re.search('^cp ', input1):
      input1 = input1.strip('\n')
      input1 = input1.replace("cp ", '')
      [source, dest] = input1.split(' ')
-     file1 = open(source, "r")
-     outputdata = file1.read()
-     file1.close()
-     file2 = open(dest, "w")
-     file2.write(outputdata)
-     file2.close()
-     outputdata = []
-     output = ("File " + source + " copied.")
+     try:
+      file1 = open(source, "r")
+      outputdata = file1.read()
+      file1.close()
+      file2 = open(dest, "w")
+      file2.write(outputdata)
+      file2.close()
+      outputdata = []
+      output = ("File " + source + " copied.")
+     except:
+        output = "Couldn't copy.\n"
    elif re.search('^cd', input1):
      input1 = input1.replace("cd ", '')
      try:
@@ -90,13 +96,19 @@ def shell():
    elif re.search('^mkdir', input1):
      input1 = input1.replace("mkdir ", '')
      input1 = input1.strip('\n')
-     os.mkdir(input1)
-     output = ("Directory " + input1 + " created.\n")
+     try:
+      os.mkdir(input1)
+      output = ("Directory " + input1 + " created.\n")
+     except:
+      output = "Couldn't make directory\n"
    elif re.search('^reload', input1):
      input1 = input1.replace("reload ", '')
      input1 = input1.strip('\n')
-     del sys.modules[input1]
-     output = ("Module " + input1 + " reloaded..\n")
+     try:
+      del sys.modules[input1]
+      output = ("Module " + input1 + " reloaded..\n")
+     except:
+         output = "Couldn't reload module\n"
    elif re.search('^wget', input1):
      input1 = input1.replace("wget ", '')
      input1 = input1.strip('\n')
@@ -108,8 +120,11 @@ def shell():
    elif re.search('^rmdir', input1):
      input1 = input1.replace("rmdir ", '')
      input1 = input1.strip('\n')
-     os.rmdir(input1)
-     output = ("Removed " + input1 + ".\n")
+     try:
+      os.rmdir(input1)
+      output = ("Removed " + input1 + ".\n")
+     except:
+         output = "Couldn't remove dir.\n"
    elif re.search('^exec ', input1):
      input1 = input1.replace("exec ", '')
      input1 = input1.strip('\n')
@@ -130,7 +145,11 @@ def shell():
    elif re.search('^rm ', input1):
      input1 = input1.replace("rm ", '')
      input1 = input1.strip('\n')
-     os.unlink(input1)
+     try:
+       os.unlink(input1)
+       output = ("Removed file " + input1 + "\n")
+     except:
+      output = "Couldn't remove file\n"
    elif re.search('^ntpsync', input1):
      ntptime.host=NTPSERVER
      ntptime.settime()
@@ -146,11 +165,14 @@ def shell():
          str(min) + ":" +
          str(sec))
    elif re.search('^scanwifi',input1):
-       wlan = network.WLAN(network.STA_IF)
-       wlan.active(True)
-       nets = wlan.scan()
-       for i in nets:
-         output += (str(i[0].decode()) + "\n")
+       try:
+         wlan = network.WLAN(network.STA_IF)
+         wlan.active(True)
+         nets = wlan.scan()
+         for i in nets:
+           output += (str(i[0].decode()) + "\n")
+       except:
+            output = "Couldn't scan networks.\n"
    elif re.search('^connect', input1):
      print("Enter SSID: ")
      ssid = input()
@@ -166,28 +188,34 @@ def shell():
      except:
          output = "Error: couldn't obtain address\n"
    elif re.search('^ifconfig', input1):
-     wlan = network.WLAN(network.STA_IF)
-     status = wlan.ifconfig()
-     output = ("\nIP........... " +
-        status[0] +
-        "\nNETMASK......." +
-        status[1] + "\n" +
-        "GATEWAY......." +
-        status[2])
+       try:
+         wlan = network.WLAN(network.STA_IF)
+         status = wlan.ifconfig()
+         output = ("\nIP........... " +
+            status[0] +
+            "\nNETMASK......." +
+            status[1] + "\n" +
+            "GATEWAY......." +
+            status[2])
+       except:
+            output = "Couldn't get interface or check syntax.\n"
    elif re.search('^edit ', input1):
      input1 = input1.replace("edit ", '')
      print("EDIT MODE DETECTED...\n")
      print ("(ENTER STOPEDIT to stop)\n")
-     file1 = open(input1, "w")
-     flag = 0
-     while flag == 0:
-       line =input()
-       if re.search('STOPEDIT', line):
-         file1.close()
-         flag = 1
-       else:
-         file1.write(line + "\n")
-     output = ("File " + input1 + " created..\n")
+     try:
+      file1 = open(input1, "w")
+      flag = 0
+      while flag == 0:
+        line =input()
+        if re.search('STOPEDIT', line):
+          file1.close()
+          flag = 1
+        else:
+          file1.write(line + "\n")
+        output = ("File " + input1 + " created..\n")
+     except:
+          output = "Couldn't write file\n"
    else:
         print("Error: command not found\n")
    # handle the output

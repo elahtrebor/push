@@ -14,15 +14,20 @@ Then from the micropython cli "import push"
 It has a quick wifi connect built in, a crude editor that works similiar to 
 cat'ng text into the console, 
 wget (that works like curl), an ntp sync tool.
-exec will run a python script.
+The "exec" command will run a python script.
+You may want to make a lib directory first "mkdir lib" for exec
+as micropython defaulty has the lib directory is in its path.
+So for instance to call test.py with function hello():
+place test.py in the lib directory and from the shell
+call it with  "exec test.hello()"
 
-Make sure you use the absolute path when working with directories and files or shell may crash.
+Its recommended to use the absolute path when working with directories and files or shell may crash.
 
 Supports ls, cat, cd, pwd, mkdir, rmdir, rm, cp, ifconfig, wget(works like curl),  
 and redirect ">".
 No pipes yet. No switches or flags.
 
-if the shell crashes then you may have to restart it with "import push" and "push.shell()"
+if the shell crashes then you can restart it with "import push" and "push.shell()"
 
 Here is the output of a test drive:
 

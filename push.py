@@ -5,6 +5,7 @@ import sys
 import network
 import urequests
 import time
+from time import localtime
 import ntptime
 
 NTPSERVER="pool.ntp.org"
@@ -130,6 +131,15 @@ def shell():
      ntptime.settime()
      print("time sync'd with: " + NTPSERVER)
      output = str(time.localtime())
+   elif re.search('^date', input1):
+     dateTimeObj = localtime()
+     year,month,day,hour,min,sec,wday,yday = (dateTimeObj)
+     output =  (str(month) + "/" +
+         str(day) + "/" +
+         str(year) + " " +
+         str(hour) + ":" +
+         str(min) + ":" +
+         str(sec))
    elif re.search('^scanwifi',input1):
        wlan = network.WLAN(network.STA_IF)
        wlan.active(True)

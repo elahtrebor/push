@@ -7,6 +7,7 @@ import urequests
 import time
 from time import localtime
 import ntptime
+import gc
 
 VERSION = "1.12.19.22"
 NTPSERVER="pool.ntp.org"
@@ -14,7 +15,7 @@ NTPSERVER="pool.ntp.org"
 def shell():
  print ("******************************")
  print ("* PUSH - Python Micro SHELL  *")
- print ("* ls,pwd,cd,uname,df,cat     *")
+ print ("* ls,pwd,cd,uname,,cat     *")
  print ("* rmdir,rm,mkdir,cp,edit     *")
  print ("* ifconfig,wget,connect,>    *")
  print ("******************************")
@@ -54,6 +55,8 @@ def shell():
        output = ("\n".join(os.listdir()))
    elif re.search('^uname',input1):
      output = ("\n".join(os.uname()))
+   elif re.search('^free',input1):
+     output = str(gc.mem_free())     
    elif re.search('^df',input1):
      total = float(os.statvfs('/')[2]) * float(os.statvfs('/')[0])
      used = float(os.statvfs('/')[3]) * float(os.statvfs('/')[0])
@@ -136,10 +139,10 @@ def shell():
         try:
           script = getattr(__import__(module), func)
           if not args:
-              script()
+              output = str(script())
           else:
               args = args.replace('"', "")
-              script(args)
+              output = str(script(args))
         except:
           output = "Error: Check Syntax\n"
    elif re.search('^rm ', input1):

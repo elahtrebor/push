@@ -8,6 +8,7 @@ import time
 from time import localtime
 import ntptime
 
+VERSION = "1.12.19.22"
 NTPSERVER="pool.ntp.org"
 
 def shell():
@@ -36,6 +37,11 @@ def shell():
    if re.search('^exit', input1):
      print("bye..")
      sys.exit()
+   if re.search('^help', input1):
+     print("PUSH ver: " + VERSION + "\n")
+     print ("commands: exit, ls, uname, df, pwd, cat, cp, cd, mkdir,\n")
+     print ("reload, wget, rmdir, exec, rm, ntpsync, date,\n")
+     print ("scanwifi, connect, ifconfig, edit\n")
    elif re.search('^ls',input1):
      input1 = input1.replace("ls", '')
      input1 = input1.strip()
@@ -108,11 +114,7 @@ def shell():
         module = re.search('^(.*?)\.', input1).group(1)
         input1 = input1.replace(module + ".","")
         func = re.search('^(.*?)\(', input1).group(1)
-        args = re.search('\((.*?)\)', input1).group(1)
-        #print("module is: " + module + "\n")
-        #print("func is: " + func + "\n")
-        #print("args is: " + args + "\n")
-        
+        args = re.search('\((.*?)\)', input1).group(1)        
         try:
           script = getattr(__import__(module), func)
           if not args:

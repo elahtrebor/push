@@ -42,6 +42,9 @@ $ifconfig
 IP........... 0.0.0.0
 NETMASK.......0.0.0.0
 GATEWAY.......0.0.0.0
+$
+$
+$
 $connect
 Enter SSID: 
 mynetwork

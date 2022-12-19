@@ -46,7 +46,10 @@ def shell():
      input1 = input1.replace("ls", '')
      input1 = input1.strip()
      if re.search('\S+',input1):
-       output = ("\n".join(os.listdir(input1)))
+       try:
+           output = ("\n".join(os.listdir(input1)))
+       except:
+           output = "Syntax Error\n"
      else:
        output = ("\n".join(os.listdir()))
    elif re.search('^uname',input1):

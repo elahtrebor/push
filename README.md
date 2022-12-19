@@ -20,6 +20,7 @@ as micropython defaulty has the lib directory is in its path.
 So for instance to call test.py with function hello():
 place test.py in the lib directory and from the shell
 call it with  "exec test.hello()"
+exec will also run native micropython functions for example os.listdir()
 
 Its recommended to use the absolute path when working with directories and files.
 
@@ -150,4 +151,11 @@ is
 a
 test
 
+$cd ..
+..
+$exec os.listdir()
+['boot.py', 'lib', 'push.py', 'tmp']
 
+
+
+$

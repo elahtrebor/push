@@ -94,7 +94,8 @@ $wget https://www.ntppool.org/en/
 		
 <-- truncated for berevity demo-->  
   
-You can install other libraries from github using wget://yourgithublink  > /lib/yourfilename.py
+You can install other libraries from 
+github using wget://yourgithub_raw_link  > /lib/yourfilename.py
   
   Example (Download uping and ping a network host):
 $cd /lib  

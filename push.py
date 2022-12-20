@@ -15,7 +15,7 @@ NTPSERVER="pool.ntp.org"
 def shell():
  print ("******************************")
  print ("* PUSH - Python Micro SHELL  *")
- print ("* ls,pwd,cd,uname,,cat     *")
+ print ("* ls,pwd,cd,uname,,cat       *")
  print ("* rmdir,rm,mkdir,cp,edit     *")
  print ("* ifconfig,wget,connect,>    *")
  print ("******************************")
@@ -96,6 +96,14 @@ def shell():
       output = input1
      except:
       output = ("Error. Couldn't cd\n")
+   elif re.search('^rename ', input1):
+      input1 = input1.replace("rename ", '') 
+      [source, dest] = input1.split(' ')  
+      try:
+        os.rename(source, dest)
+        output = (source + " renamed..")
+      except:
+        output = "Couldn't rename\n"
    elif re.search('^mkdir', input1):
      input1 = input1.replace("mkdir ", '')
      input1 = input1.strip('\n')

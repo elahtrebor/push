@@ -50,8 +50,10 @@ IP........... 0.0.0.0
 NETMASK.......0.0.0.0
 GATEWAY.......0.0.0.0
 $
-$
-$
+
+
+
+
 $connect
 Enter SSID: 
 mynetwork
@@ -61,12 +63,16 @@ attempting to connect..
 
 Check ifconfig..
 
+
+
 $ifconfig
 
 IP........... 192.168.1.18
 NETMASK.......255.255.255.0
 GATEWAY.......192.168.1.1
 $
+
+
 
 $ls
 boot.py

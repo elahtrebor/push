@@ -31,7 +31,8 @@ No pipes yet. No switches or flags.
 if for some reason the shell crashes then you can restart it with "import push" and "push.shell()"
 
 Here is the output of a test drive:
-
+</p>
+<pre>
 MicroPython v1.19.1-773-g988b6e2da on 2022-12-15; ESP32 module with ESP32
 
 Type "help()" for more information.

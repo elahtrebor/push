@@ -10,7 +10,7 @@ To use make sure you have micropython installed first.
 
 To install the shell, just connect with thonny or whatever your using to manage your microdevice.
 Copy the push.py file on the device and save as push.py
-Then from the micropython cli "import push"
+Then from the micropython cli "import push".
 It has a quick wifi connect built in, a crude editor that works similiar to 
 cat'ng text into the console, 
 wget (that works like curl), an ntp sync tool.
@@ -24,7 +24,7 @@ exec will also run native micropython functions for example os.listdir()
 
 Its recommended to use the absolute path when working with directories and files.
 
-Supports ls, cat, cd, pwd, mkdir, rmdir, rm, cp, ifconfig, wget(works like curl),  
+Supports ls, cat, cd, pwd, mkdir, rmdir, rm, rename, cp, ifconfig, wget(works like curl),  
 and redirect ">".
 No pipes yet. No switches or flags.
 
@@ -37,7 +37,7 @@ MicroPython v1.19.1-773-g988b6e2da on 2022-12-15; ESP32 module with ESP32
 
 Type "help()" for more information.
 
->>> import push
+\>\>\> import push
 ******************************
 * PUSH - Python Micro SHELL  *
 * ls,pwd,cd,uname,df,cat     *

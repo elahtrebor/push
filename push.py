@@ -56,12 +56,12 @@ def EVAL(input1):
    elif re.search('^uname',input1):
      output = ("\n".join(os.uname()))
    elif re.search('^free',input1):
-     output = str(gc.mem_free())
+     output = str(gc.mem_free())     
    elif re.search('^df',input1):
      total = float(os.statvfs('/')[2]) * float(os.statvfs('/')[0])
      used = float(os.statvfs('/')[3]) * float(os.statvfs('/')[0])
      free = total - used
-     output = ("Free: " + str(free) + " Used: " +
+     output = ("Free: " + str(free) + " Used: " + 
              str(used) + " Total: " + str(total) )
    elif re.search('^pwd', input1):
      output = os.getcwd()
@@ -81,7 +81,7 @@ def EVAL(input1):
        x = 0
        with open(input1) as f:
          for line in f:
-          x += 1
+          x += 1 
        f.close()
        output = (str(x) + "\n")
      except:
@@ -94,7 +94,7 @@ def EVAL(input1):
       with open(fname) as f:
         for line in f:
             if re.search(rgx,line):
-              output += line
+              output += line 
       f.close()
      except:
       output = "Couldn't perform.\n"
@@ -121,8 +121,8 @@ def EVAL(input1):
      except:
       output = ("Error. Couldn't cd\n")
    elif re.search('^rename ', input1):
-      input1 = input1.replace("rename ", '')
-      [source, dest] = input1.split(' ')
+      input1 = input1.replace("rename ", '') 
+      [source, dest] = input1.split(' ')  
       try:
         os.rename(source, dest)
         output = (source + " renamed..")
@@ -167,7 +167,7 @@ def EVAL(input1):
         module = re.search('^(.*?)\.', input1).group(1)
         input1 = input1.replace(module + ".","")
         func = re.search('^(.*?)\(', input1).group(1)
-        args = re.search('\((.*?)\)', input1).group(1)
+        args = re.search('\((.*?)\)', input1).group(1)        
         try:
           script = getattr(__import__(module), func)
           if not args:
@@ -322,7 +322,6 @@ def shell():
      sys.exit()
    else:
        EVAL(input1)
-
+       
 
 shell()
-

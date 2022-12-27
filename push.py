@@ -9,35 +9,35 @@ from time import localtime
 import ntptime
 import gc
 
-VERSION = "1.12.19.22"
+VERSION = "2.12.23.22"
 NTPSERVER="pool.ntp.org"
+redirect = 0
+output = ""
+STDOUT = "/STDOUT"
+STDIN = "/STDIN"
+FIN = 0
 
-def shell():
- print ("******************************")
- print ("* PUSH - Python Micro SHELL  *")
- print ("* ls,pwd,cd,uname,,cat       *")
- print ("* rmdir,rm,mkdir,cp,edit     *")
- print ("* ifconfig,wget,connect,>    *")
- print ("******************************")
+def soread():
+    sofile = open(STDOUT, "r")
+    data = sofile.read()
+    sofile.close()
+    return data
 
- while True:
-   print("$", end="")
-   input1 = input()
+def soclear():
+   open(STDOUT, 'w').close()
+   open(STDIN, 'w').close()
+
+def EVAL(input1):
+   global FIN
    output = ""
    redirect = 0
-
    if re.search('>', input1):
+      #print("redirect: " + input1)
       redirect = 1
       input1, outfile = input1.split(">")
       input1 = input1.rstrip()
       outfile = outfile.lstrip()
-   # if nothing then just re loop
-   if not re.search('^[A-Za-z]', input1):
-       continue
-   # if exit.. or do some commands
-   if re.search('^exit', input1):
-     print("bye..")
-     sys.exit()
+
    if re.search('^help', input1):
      print("PUSH ver: " + VERSION + "\n")
      print ("commands: exit, ls, uname, df, pwd, cat, cp, cd, mkdir,\n")
@@ -61,8 +61,8 @@ def shell():
      total = float(os.statvfs('/')[2]) * float(os.statvfs('/')[0])
      used = float(os.statvfs('/')[3]) * float(os.statvfs('/')[0])
      free = total - used
-     output = ("Free: " + str(free) + " Used: " + str(used) + " Total: " + str(total
-)  )
+     output = ("Free: " + str(free) + " Used: " + 
+             str(used) + " Total: " + str(total) )
    elif re.search('^pwd', input1):
      output = os.getcwd()
    elif re.search('^cat', input1):
@@ -74,6 +74,30 @@ def shell():
       file1.close()
      except:
          output = "Couldn't open file\n"
+   elif re.search('^wc ', input1):
+     input1 = input1.replace("wc ", '')
+     input1 = input1.strip('\n')
+     try:
+       x = 0
+       with open(input1) as f:
+         for line in f:
+          x += 1 
+       f.close()
+       output = (str(x) + "\n")
+     except:
+         output = "Couldn't open file\n"
+   elif re.search('^grep', input1):
+     input1 = input1.replace("grep ", '')
+     input1 = input1.strip('\n')
+     [rgx,fname] = input1.split()
+     try:
+      with open(fname) as f:
+        for line in f:
+            if re.search(rgx,line):
+              output += line 
+      f.close()
+     except:
+      output = "Couldn't perform.\n"
    elif re.search('^cp ', input1):
      input1 = input1.strip('\n')
      input1 = input1.replace("cp ", '')
@@ -164,8 +188,8 @@ def shell():
    elif re.search('^ntpsync', input1):
      ntptime.host=NTPSERVER
      ntptime.settime()
-     print("time sync'd with: " + NTPSERVER)
-     output = str(time.localtime())
+     output = ("time sync'd with: " + NTPSERVER)
+     output += str(time.localtime())
    elif re.search('^date', input1):
      dateTimeObj = localtime()
      year,month,day,hour,min,sec,wday,yday = (dateTimeObj)
@@ -229,16 +253,75 @@ def shell():
           output = "Couldn't write file\n"
    else:
         print("Error: command not found\n")
-   # handle the output
-   if not re.search('\S+', output):
-       continue
 
+   if not re.search('\S+', output):
+       return
    if redirect:
      fileh = open(outfile, "w")
      fileh.write(output)
      fileh.close()
+     result = soread()
+     if re.search(STDOUT, outfile) and FIN:
+      print(result)
    else:
-       print(output)
+    print(output)
+
+
+def tokenize(expr):
+  tokens = expr.split('|')
+  x = 0
+  l = []
+  for i in tokens:
+    i = re.sub('\s+$',"",i)
+    i = re.sub('^\s+',"",i)
+    if x == 0:
+     l.append(i + ">" + STDOUT)
+    elif re.search(">", i):
+     i = i.replace(">", "STDOUT >")
+     l.append(i)
+    else:
+     l.append (i + " " + STDOUT + " >" + STDOUT)
+    x += 1
+  return l
+
+
+def shell():
+ global FIN
+ print ("******************************")
+ print ("* PUSH - Python Micro SHELL  *")
+ print ("* ls,pwd,cd,uname,df,cat     *")
+ print ("* rmdir,rm,mkdir,cp,edit     *")
+ print ("* ifconfig,wget,connect,>    *")
+ print ("******************************")
+
+ soclear()
+ while True:
+   soclear()
+   print("$", end="")
+   input1 = input()
+
+   if re.search('\|',input1):
+      tokens = tokenize(input1)
+      tlen = len(tokens)
+      x = 0
+      for i in tokens:
+        if x == (tlen - 1):
+            FIN = 1
+        EVAL(i)
+        x += 1
+      continue
+
+   # if nothing then just re loop
+   if not re.search('^[A-Za-z]', input1):
+       continue
+   # if exit.. or do some commands
+   elif re.search('^exit', input1):
+     print("bye..")
+     os.unlink(STDOUT)
+     os.unlink(STDIN)
+     sys.exit()
+   else:
+       EVAL(input1)
+       
 
 shell()
-

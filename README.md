@@ -3,7 +3,7 @@
 Python Micro Shell (FOR ESP32) - One file shell for micropython micro controllers
 - cd, pwd, cat , redirect, wget, mkdir, rmdir, rm, etc
 
-NOTE for ESP 8266 use sh.py 
+NOTE for ESP 8266 use sh.py in the esp8266 folder
 
 
 This is designed to quickly give you a mini linix like shell. 

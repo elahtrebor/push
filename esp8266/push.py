@@ -9,7 +9,7 @@ import gc
 VERSION = "11.19.25.22"
 redirect = 0
 output = ""
-ROOTDIR=""
+ROOTDIR="/"
 STDOUT = ROOTDIR + "STDOUT"
 STDIN = "STDIN"
 FIN = 0

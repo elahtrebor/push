@@ -1,7 +1,10 @@
 # push
 <p>
-Python Micro Shell - One file shell for micropython micro controllers
+Python Micro Shell (FOR ESP32) - One file shell for micropython micro controllers
 - cd, pwd, cat , redirect, wget, mkdir, rmdir, rm, etc
+
+NOTE for ESP 8266 use sh.py 
+
 
 This is designed to quickly give you a mini linix like shell. 
 Tested on ESP32, ESP8266, RPI PICO W.

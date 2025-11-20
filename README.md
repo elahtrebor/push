@@ -27,7 +27,7 @@ exec will also run native micropython functions for example os.listdir()
 
 Its recommended to use the absolute path when working with directories and files.
 
-Supports ls, cat, cd, pwd, mkdir, rmdir, rm, rename, cp, grep, wc, ifconfig, wget(works like curl),  
+Supports ls, cat, cd, pwd, mkdir, rmdir, rm, rename, cp, grep, wc, ifconfig, wget(works like curl), date, scanwifi, connect
 and redirect ">".
 Supports PIPE now. No switches or flags.
 

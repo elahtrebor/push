@@ -262,8 +262,10 @@ def EVAL(input1):
      fileh.close()
      result = soread()
      if re.search(STDOUT, outfile) and FIN:
+      FIN=0
       print(result)
    else:
+    FIN=0
     print(output)
 
 

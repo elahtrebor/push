@@ -9,7 +9,7 @@ from time import localtime
 import ntptime
 import gc
 
-VERSION = "2.12.23.22"
+VERSION = "12.14.25.22"
 NTPSERVER="pool.ntp.org"
 redirect = 0
 output = ""

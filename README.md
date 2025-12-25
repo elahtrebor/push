@@ -5,6 +5,7 @@ Python Micro Shell (FOR ESP32) - One file shell for micropython micro controller
 
 NOTE for ESP 8266 use sh.py in the esp8266 folder
 
+pushvm - This shell was converted to a virtual machine complete with job backgrounding. (This only runs on ESP32 or RPI as 8266 doesnt have enough mem)
 
 This is designed to quickly give you a mini linix like shell. 
 Tested on ESP32, ESP8266, RPI PICO W.

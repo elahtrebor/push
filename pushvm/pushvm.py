@@ -1,6 +1,5 @@
 # pushvm_complete.py
 # Full integrated MicroPython-friendly shell VM.
-# See header in the chat for features.
 import sys
 try:
     import uselect as select  # MicroPython

@@ -1,17 +1,32 @@
-# pushvm_complete.py
-# Full integrated MicroPython-friendly shell VM.
-import sys
-try:
-    import uselect as select  # MicroPython
-except Exception:
-    try:
-        import select          # CPython fallback (Mac testing)
-    except Exception:
-        select = None
+# pushvm.py
+# PUSH VM (ESP32-first complete version)
+# Features:
+# - Commands: help, ls, uname, free, df, pwd, cat, wc, grep, cp, cd, rename,
+#            mkdir, rmdir, exec, rm, date, scanwifi, connect, ifconfig, edit,
+#            echo, upper, test ([), write (>), append (>>), sleep
+# - Pipelines: |
+# - Redirection: > and >> (compiled to | write / | append)
+# - Variables: x=3 and $x expansion
+# - Control flow:
+#     if <pipeline> then <stmts> [else <stmts>] fi
+#     while <pipeline> do <stmts> done
+#     for i 1 10 [step] do <stmts> done
+#     foreach v in a b c do <stmts> done
+#     foreach v in <pipeline> do <stmts> done   (splits output by lines)
+#     break / continue
+# - Short-circuit: && and ||
+# - Background jobs: trailing & (jobs/kill/fg)
+# - Hybrid pipe spooling: RAM until threshold then spill to STDOUT file
+# - REPL: auto selects live mode (non-blocking) on MicroPython when pollable,
+#         otherwise uses basic input() (better for desktop testing)
+#
+# Notes:
+# - Designed for ESP32/WebREPL + Thonny; also runs on CPython for development.
+# - sleep works correctly in background jobs (no generator re-entrancy).
 
 import os
-import re
 import time
+import sys
 
 try:
     import gc
@@ -23,25 +38,69 @@ try:
 except Exception:
     network = None
 
+try:
+    import uselect as select  # MicroPython
+except Exception:
+    try:
+        import select  # CPython fallback
+    except Exception:
+        select = None
+
 VERSION = "pushvm-complete-0.1"
+
+# -----------------------
+# Global "current VM" pointer so commands can affect the VM that is actually executing.
+# This keeps commands dict shared across background job clones without closures bound to the wrong VM.
+# -----------------------
+_CURRENT_VM = None
+
+# -----------------------
+# Time helpers
+# -----------------------
+def _sleep_ms(ms):
+    if hasattr(time, "sleep_ms"):
+        time.sleep_ms(ms)
+    else:
+        time.sleep(ms / 1000.0)
+
+def _ticks_ms():
+    if hasattr(time, "ticks_ms"):
+        return time.ticks_ms()
+    return int(time.time() * 1000)
+
+def _ticks_add(a, ms):
+    if hasattr(time, "ticks_add"):
+        return time.ticks_add(a, ms)
+    return a + ms
+
+def _ticks_diff(a, b):
+    if hasattr(time, "ticks_diff"):
+        return time.ticks_diff(a, b)
+    return a - b
+
+def is_micropython():
+    try:
+        return sys.implementation.name == "micropython"
+    except Exception:
+        return False
 
 # -----------------------
 # Opcodes
 # -----------------------
-OP_LOAD     = 1
-OP_ARG      = 2
-OP_PIPE     = 3
-OP_EXEC     = 4      # execute + print
-OP_SET      = 5
-OP_GET      = 6
-OP_JMP      = 7
-OP_JZ       = 8
-OP_EXECQ    = 9      # execute quietly (conditions / loop plumbing)
-OP_SETLIST  = 10     # vars[name] = list(items)
-OP_SPLITL   = 11     # vars[name] = last_output.splitlines()
-OP_FORE_INIT= 12     # init foreach iterator
-OP_FORE_NEXT= 13     # advance foreach; if done jump
-OP_END      = 255
+OP_LOAD      = 1
+OP_ARG       = 2
+OP_PIPE      = 3
+OP_EXEC      = 4      # execute + print
+OP_SET       = 5
+OP_GET       = 6
+OP_JMP       = 7
+OP_JZ        = 8
+OP_EXECQ     = 9      # execute quietly
+OP_SETLIST   = 10     # vars[name] = list(items)
+OP_SPLITL    = 11     # vars[name] = last_output.splitlines()
+OP_FORE_INIT = 12     # init foreach iterator
+OP_FORE_NEXT = 13     # advance foreach; if done jump
+OP_END       = 255
 
 # -----------------------
 # Hybrid PipeData (RAM or spool file)
@@ -284,7 +343,6 @@ class Compiler:
         loop_start = len(self.code)
 
         # condition using test:
-        # if step negative -> -ge else -le
         cmpop = "-le"
         if step is not None:
             try:
@@ -388,7 +446,7 @@ class Compiler:
 
     # ---- && / || chains + redirection ----
     def compile_chain(self, stop_tokens):
-        # compile first pipeline (or assignment)
+        # assignment like x=3
         t = self.peek()
         if t is not None and ("=" in t) and (not t.startswith("$")) and (t != "|"):
             name, val = t.split("=", 1)
@@ -400,19 +458,19 @@ class Compiler:
             self.emit(OP_GET, name)
             self.emit(OP_EXECQ, None)
         else:
-            self.compile_pipeline(stop_tokens=stop_tokens.union({"&&","||",">",">>"}))
+            self.compile_pipeline(stop_tokens=stop_tokens.union({"&&", "||", ">", ">>"}))
             self.compile_redirection_if_present()
             self.emit(OP_EXEC, None)
 
         while True:
             op = self.peek()
-            if op not in ("&&","||"):
+            if op not in ("&&", "||"):
                 return
             self.pop()
 
             if op == "&&":
                 skip_rhs = self.emit(OP_JZ, None)
-                self.compile_pipeline(stop_tokens=stop_tokens.union({"&&","||",">",">>"}))
+                self.compile_pipeline(stop_tokens=stop_tokens.union({"&&", "||", ">", ">>"}))
                 self.compile_redirection_if_present()
                 self.emit(OP_EXEC, None)
                 self.patch(skip_rhs, len(self.code))
@@ -420,7 +478,7 @@ class Compiler:
                 run_rhs = self.emit(OP_JZ, None)
                 skip_rhs = self.emit(OP_JMP, None)
                 self.patch(run_rhs, len(self.code))
-                self.compile_pipeline(stop_tokens=stop_tokens.union({"&&","||",">",">>"}))
+                self.compile_pipeline(stop_tokens=stop_tokens.union({"&&", "||", ">", ">>"}))
                 self.compile_redirection_if_present()
                 self.emit(OP_EXEC, None)
                 self.patch(skip_rhs, len(self.code))
@@ -466,30 +524,18 @@ class Compiler:
 
 def compile_line(line):
     toks = tokenize(line.strip())
-
     bg = False
     if toks and toks[-1] == "&":
         bg = True
         toks = toks[:-1]
-
     c = Compiler(toks)
     return c.compile(), bg
 
 # -----------------------
 # Cooperative job system
 # -----------------------
-def _ticks_ms():
-    if hasattr(time, "ticks_ms"):
-        return time.ticks_ms()
-    return int(time.time() * 1000)
-
-def _ticks_diff(a, b):
-    if hasattr(time, "ticks_diff"):
-        return time.ticks_diff(a, b)
-    return a - b
-
 class Job:
-    __slots__ = ("jid","name","gen","done","error")
+    __slots__ = ("jid", "name", "gen", "done", "error")
     def __init__(self, jid, name, gen):
         self.jid = jid
         self.name = name
@@ -533,8 +579,10 @@ class VM:
         self.jobs = {}
         self.next_jid = 1
 
+        # scheduler-safe sleep state
+        self.sleep_until = None
+
     def clone_for_job(self):
-        # Background jobs get their own VM state (commands shared, vars copied).
         jvm = VM(commands=self.commands, spool_path=self.spool_path, spool_threshold=self.spool_threshold)
         jvm.vars = dict(self.vars)
         return jvm
@@ -566,6 +614,13 @@ class VM:
     def run(self, trace=False):
         self.pc = 0
         while self.pc < len(self.code):
+            # Foreground sleep: block, but keep background jobs alive.
+            if self.sleep_until is not None:
+                while _ticks_diff(self.sleep_until, _ticks_ms()) > 0:
+                    self.poll_jobs(steps=80)
+                    _sleep_ms(20)
+                self.sleep_until = None
+
             op, arg = self.code[self.pc]
             self.pc += 1
 
@@ -648,6 +703,14 @@ class VM:
         # Cooperative runner: yields frequently so it can be used as a background job.
         self.pc = 0
         while self.pc < len(self.code):
+            # Background sleep: yield quickly until wake time (no re-entrancy).
+            if self.sleep_until is not None:
+                if _ticks_diff(self.sleep_until, _ticks_ms()) > 0:
+                    yield None
+                    continue
+                else:
+                    self.sleep_until = None
+
             op, arg = self.code[self.pc]
             self.pc += 1
 
@@ -674,7 +737,6 @@ class VM:
                 out = self.exec_pipeline()
                 self.last_output = out
                 self.last_truth = self.truthy(out)
-                # For background jobs we do NOT auto-print; jobs can print in their commands if desired.
                 self.value_stack = []
 
             elif op == OP_JMP:
@@ -754,9 +816,11 @@ class VM:
         return out.as_text()
 
     def run_command(self, cmd, args, input_data):
+        global _CURRENT_VM
         fn = self.commands.get(cmd)
         if fn is None:
             return "Error: command not found: %s\n" % cmd
+        _CURRENT_VM = self
         return fn(args, input_data)
 
     # ---- jobs ----
@@ -784,8 +848,26 @@ class VM:
             del self.jobs[jid]
 
 # -----------------------
-# Commands (ported from your EVAL + helpers)
-# Signature: fn(args, input_data)->str
+# sleep command (scheduler-safe, works for bg jobs)
+# -----------------------
+def cmd_sleep(args, input_data):
+    global _CURRENT_VM
+    if not args:
+        return ""
+    try:
+        secs = float(args[0])
+    except Exception:
+        return ""
+    ms = int(secs * 1000)
+    if ms <= 0:
+        return ""
+    if _CURRENT_VM is None:
+        return ""
+    _CURRENT_VM.sleep_until = _ticks_add(_ticks_ms(), ms)
+    return ""
+
+# -----------------------
+# Commands (Signature: fn(args, input_data)->str)
 # -----------------------
 def cmd_help(args, input_data):
     return (
@@ -793,7 +875,7 @@ def cmd_help(args, input_data):
         "commands: exit, ls, uname, free, df, pwd, cat, cp, cd, mkdir,\n"
         "grep, rmdir, exec, rm, date,\n"
         "scanwifi, connect, ifconfig, edit, rename\n"
-        "extras: echo, upper, wc, test, write (>), append (>>)\n"
+        "extras: echo, upper, wc, test, write (>), append (>>), sleep\n"
         "flow: if/while/for/foreach, break/continue, &&/||, vars x=val $x, jobs &\n"
         "jobctl: jobs, kill <id>, fg <id>\n"
     )
@@ -862,6 +944,7 @@ def cmd_wc(args, input_data):
         return "Couldn't open file\n"
 
 def cmd_grep(args, input_data):
+    import re
     if not args:
         return ""
     rgx = args[0]
@@ -933,12 +1016,13 @@ def cmd_rm(args, input_data):
         return "Couldn't remove file\n"
 
 def cmd_date(args, input_data):
-    t = time.localtime()
-    year, month, day, hour, minute, sec, wday, yday = t
-    return "%s/%s/%s %s:%s:%s" % (month, day, year, hour, minute, sec)
+    dateTimeObj = time.localtime()
+    year,month,day,hour,minu,sec,wday,yday = (dateTimeObj)
+    return "%s/%s/%s %s:%s:%s" % (month, day, year, hour, minu, sec)
 
 def cmd_exec(args, input_data):
     # exec module.func("arg")
+    import re
     s = " ".join(args)
     if "." not in s or "(" not in s or ")" not in s:
         return "Error: Check Syntax\n"
@@ -998,8 +1082,8 @@ def cmd_ifconfig(args, input_data):
         status = wlan.ifconfig()
         return (
             "\nIP........... " + status[0] +
-            "\nNETMASK......." + status[1] +
-            "\nGATEWAY......." + status[2]
+            "\nNETMASK......." + status[1] + "\n" +
+            "GATEWAY......." + status[2]
         )
     except Exception:
         return "Couldn't get interface or check syntax.\n"
@@ -1051,6 +1135,7 @@ def cmd_append(args, input_data):
             f.write(s)
         return ""
     except Exception:
+        # fallback if append not supported
         try:
             old = ""
             try:
@@ -1096,7 +1181,7 @@ def cmd_test(args, input_data):
             return "1" if str(a) == str(b) else ""
         if op == "!=":
             return "1" if str(a) != str(b) else ""
-        if op in ("-eq","-ne","-lt","-le","-gt","-ge"):
+        if op in ("-eq", "-ne", "-lt", "-le", "-gt", "-ge"):
             try:
                 ai = int(str(a).strip())
                 bi = int(str(b).strip())
@@ -1111,9 +1196,10 @@ def cmd_test(args, input_data):
     return ""
 
 # -----------------------
-# Make VM + stateful commands + job control commands
+# VM construction (commands + job control)
 # -----------------------
 def make_vm():
+    # If you're tight on RAM, lower this to 512 or 256.
     vm = VM(commands={}, spool_path="STDOUT", spool_threshold=2048)
 
     def cmd_addv(args, input_data):
@@ -1165,7 +1251,6 @@ def make_vm():
         job = vm.jobs.get(jid)
         if not job:
             return "fg: no such job\n"
-        # run job to completion
         while not job.done:
             job.step(n=200)
         err = job.error
@@ -1211,6 +1296,9 @@ def make_vm():
         "[": cmd_test,
         "addv": cmd_addv,
 
+        # sleep
+        "sleep": cmd_sleep,
+
         # job control
         "jobs": cmd_jobs,
         "kill": cmd_kill,
@@ -1219,22 +1307,9 @@ def make_vm():
 
     return vm
 
-
-### Helper functions
-
-def _sleep_ms(ms):
-    if hasattr(time, "sleep_ms"):
-        time.sleep_ms(ms)
-    else:
-        time.sleep(ms / 1000.0)
-
-def is_micropython():
-    try:
-        import sys
-        return sys.implementation.name == "micropython"
-    except Exception:
-        return False
-
+# -----------------------
+# REPL (auto: live on MicroPython when pollable, basic otherwise)
+# -----------------------
 def stdin_is_pollable():
     if select is None:
         return False
@@ -1254,15 +1329,6 @@ def run_line(vm, line):
     else:
         vm.code = code
         vm.run(trace=False)
-
-def repl_auto(vm):
-    # Only use live mode on MicroPython to avoid double-echo on desktop terminals.
-    if is_micropython() and stdin_is_pollable():
-        print("Interactive mode: live (background jobs run while you type)")
-        repl_nonblocking(vm)
-    else:
-        print("Interactive mode: basic (background jobs run between commands)")
-        repl_blocking(vm)
 
 def repl_blocking(vm):
     while True:
@@ -1366,10 +1432,14 @@ def repl_nonblocking(vm):
         except Exception:
             pass
 
-
-# -----------------------
-# REPL
-# -----------------------
+def repl_auto(vm):
+    # Avoid "double-echo" issues on desktop terminals: only do live mode on MicroPython.
+    if is_micropython() and stdin_is_pollable():
+        print("Interactive mode: live (background jobs run while you type)")
+        repl_nonblocking(vm)
+    else:
+        print("Interactive mode: basic (background jobs run between commands)")
+        repl_blocking(vm)
 
 def repl():
     vm = make_vm()
@@ -1378,27 +1448,5 @@ def repl():
     print("Background: add '&' at end. Job control: jobs/kill/fg.")
     repl_auto(vm)
 
-
-RUN_SELFTEST = False
-
 if __name__ == "__main__":
-  if RUN_SELFTEST:
-    # quick sanity checks
-    vm = make_vm()
-    vm.poll_jobs()
-
-    # control flow sanity
-    c, _ = compile_line("if test -z '' then echo OK else echo BAD fi")
-    vm.code = c; vm.run()
-
-    c, _ = compile_line("x=3; while test $x -gt 0 do echo $x; addv x -1; done")
-    vm.code = c; vm.run()
-
-    c, _ = compile_line("for i 1 3 do echo $i; done")
-    vm.code = c; vm.run()
-
-    c, _ = compile_line("test -f boot.py && echo HASBOOT || echo NOBOOT")
-    vm.code = c; vm.run()
-
-  repl()
-
+    repl()

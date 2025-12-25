@@ -52,5 +52,31 @@ push> myvar="test"
 push> echo $myvar
 test
 
+push> x=5; while test $x -gt 0 do echo $x; addv x -1; done
+5
+4
+3
+2
+1
+
+
+push> x=hi; if echo $x then echo YES else echo NO fi
+YES
+
+
+push> ls > out.txt; cat out.txt
+boot.py
+dhcp.py
+pushvm.py
+webrepl_cfg.py
+
+
+push> for i 1 30 do echo $i; done &
+[2] started for i 1 30 do echo $i; done &
+push> [2] for i 1 30 do echo $i; done & (done)
+jobs
+(no jobs)
+
+
 
 

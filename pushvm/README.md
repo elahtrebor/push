@@ -78,5 +78,21 @@ jobs
 (no jobs)
 
 
+push> sleep 10 &
+[1] started sleep 10 &
+push> 
+push> jobs
+[1] running - sleep 10 &
+
+push> ls
+bin
+boot.py
+dev
+lib
+push.py
+pushvm.py
+tmp
+push> 
+push> [1] sleep 10 & (done)
 
 

@@ -866,6 +866,9 @@ def cmd_sleep(args, input_data):
     if not args:
         return ""
 
+def cmd_modules(args, input_data):
+    output = str(help("modules"))
+    return output
 
 def cmd_run(args, input_data):
     # run <module> [args...]
@@ -1336,6 +1339,7 @@ def make_vm():
         "connect": cmd_connect,
         "ifconfig": cmd_ifconfig,
         "edit": cmd_edit,
+        "modules": cmd_modules,
 
         # extras
         "echo": cmd_echo,
@@ -1505,4 +1509,5 @@ def repl():
 
 if __name__ == "__main__":
     repl()
+
 

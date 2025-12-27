@@ -819,7 +819,18 @@ class VM:
         global _CURRENT_VM
         fn = self.commands.get(cmd)
         if fn is None:
-            return "Error: command not found: %s\n" % cmd
+            # Auto-resolve: if /lib/<cmd>.py exists, treat it like: run <cmd> <args...>
+            # This makes installed modules feel like built-in commands.
+            try:
+                lib_path = "/lib/%s.py" % cmd
+                os.stat(lib_path)  # exists?
+                runfn = self.commands.get("run")
+                if runfn is not None:
+                    _CURRENT_VM = self
+                    return runfn([cmd] + list(args), input_data)
+            except Exception:
+                pass
+            return "Error: command not found: %s" % cmd
         _CURRENT_VM = self
         return fn(args, input_data)
 
@@ -854,6 +865,49 @@ def cmd_sleep(args, input_data):
     global _CURRENT_VM
     if not args:
         return ""
+
+
+def cmd_run(args, input_data):
+    # run <module> [args...]
+    # Imports module (typically from /lib) and calls its main(argv) if present.
+    # argv is a list of strings: e.g. ["install","uping"].
+    if not args:
+        return "run: usage run <module> [args...]\n"
+    modname = args[0]
+    argv = [str(a) for a in args[1:]]
+
+    # Allow "foo.py" as module name
+    if modname.endswith(".py"):
+        modname = modname[:-3]
+
+    # Ensure /lib is on path (MicroPython usually includes it, but make it robust)
+    try:
+        if "/lib" not in sys.path:
+            sys.path.append("/lib")
+    except Exception:
+        pass
+
+    try:
+        mod = __import__(modname)
+    except Exception as e:
+        return "run: couldn't import %s (%s)\n" % (modname, e)
+
+    # Prefer main(argv). Fallback to run(argv).
+    fn = getattr(mod, "main", None)
+    if fn is None:
+        fn = getattr(mod, "run", None)
+
+    if fn is None:
+        return "run: %s has no main(argv)\n" % modname
+
+    try:
+        res = fn(argv)
+        if res is None:
+            return ""
+        return str(res)
+    except Exception as e:
+        return "run: error running %s: %s\n" % (modname, e)
+
     try:
         secs = float(args[0])
     except Exception:
@@ -1298,6 +1352,7 @@ def make_vm():
 
         # sleep
         "sleep": cmd_sleep,
+        "run": cmd_run,
 
         # job control
         "jobs": cmd_jobs,
@@ -1450,3 +1505,4 @@ def repl():
 
 if __name__ == "__main__":
     repl()
+

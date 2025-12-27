@@ -1,5 +1,7 @@
 <pre>
-pushvm 
+pushvm   
+
+Tested on ESP32 and Raspberry Pi Pico W
 
 A userland virtual machine that provides the same funcitons as push.py , however this VM also provides Job control/Backgrounding. This also gives a rich syntax similar to bash allowing you to set variables and create flow control (if, while, break , continue)
 
@@ -94,5 +96,20 @@ pushvm.py
 tmp
 push> 
 push> [1] sleep 10 & (done)
+
+
+push> cd lib
+lib
+push> 
+push> 
+push> exec ping.main("192.168.50.32")
+PING 192.168.50.32 (192.168.50.32): 64 data bytes
+84 bytes from 192.168.50.32: icmp_seq=1, ttl=64, time=5.805000 ms
+84 bytes from 192.168.50.32: icmp_seq=2, ttl=64, time=4.107000 ms
+84 bytes from 192.168.50.32: icmp_seq=3, ttl=64, time=4.457000 ms
+84 bytes from 192.168.50.32: icmp_seq=4, ttl=64, time=4.140000 ms
+4 packets transmitted, 4 packets received
+push> 
+push> 
 
 

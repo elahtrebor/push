@@ -6,7 +6,7 @@ Tested on ESP32 and Raspberry Pi Pico W
 A userland virtual machine that provides the same functions as push.py , however this VM also provides Job control/Backgrounding. This also gives a rich syntax similar to bash allowing you to set variables and create flow control (if, while, break , continue)
 </pre>
 Note: Supports a package manager called xpkg 
-found in my repos. [xpkg](elahtrebor/xpkg)
+found at [xpkg](https://github.com/elahtrebor/xpkg)
 
 <pre>
 

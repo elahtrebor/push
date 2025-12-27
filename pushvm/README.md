@@ -3,7 +3,10 @@ pushvm
 
 Tested on ESP32 and Raspberry Pi Pico W
 
-A userland virtual machine that provides the same functions as push.py , however this VM also provides Job control/Backgrounding. This also gives a rich syntax similar to bash allowing you to set variables and create flow control (if, while, break , continue)
+A userland virtual machine that provides the same functions as push.py , 
+however this VM also provides Job control/Backgrounding. 
+This also gives a rich syntax similar to bash allowing you to 
+set variables and create flow control (if, while, break , continue)
 </pre>
 Note: Supports a package manager called xpkg 
 found at [xpkg](https://github.com/elahtrebor/xpkg)
@@ -138,4 +141,47 @@ push> exec os.listdir()
 push> 
 
 
+push> xpkg list
+ping      0.1.0 - ICMP ping for MicroPython
+wget       0.1.0 - Simple HTTP downloader
+testpkg    0.1.0 - test package for testing
+
+push> xpkg install testpkg
+connecting to: https://raw.githubusercontent.com/elahtrebor/xpkg/main
+checking package list
+defining source: https://raw.githubusercontent.com/elahtrebor/xpkg/main/packages/testpkg.py
+defined destination: /lib/testpkg.py
+installed testpkg
+
+push> cd lib
+lib
+push> 
+push> cat testpkg.py
+import sys
+
+def main(argv):
+  return "ok"
+
+
+push> testpkg
+ok
+
+
+push> xpkg install ping
+connecting to: https://raw.githubusercontent.com/elahtrebor/xpkg/main
+checking package list
+defining source: https://raw.githubusercontent.com/elahtrebor/xpkg/main/packages/ping.py
+defined destination: /lib/ping.py
+installed ping
+
+push> 
+push> ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8): 64 data bytes
+84 bytes from 8.8.8.8: icmp_seq=1, ttl=114, time=23.611000 ms
+84 bytes from 8.8.8.8: icmp_seq=2, ttl=114, time=20.973000 ms
+84 bytes from 8.8.8.8: icmp_seq=3, ttl=114, time=18.878000 ms
+84 bytes from 8.8.8.8: icmp_seq=4, ttl=114, time=17.496000 ms
+4 packets transmitted, 4 packets received
+push> 
+push> 
 

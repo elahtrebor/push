@@ -112,4 +112,26 @@ PING 192.168.50.32 (192.168.50.32): 64 data bytes
 push> 
 push> 
 
+push> modules
+__main__          gc                uasyncio/event    umachine
+_boot             lwip              uasyncio/funcs    uos
+_boot_fat         math              uasyncio/lock     urandom
+_onewire          micropython       uasyncio/stream   ure
+_rp2              mip/__init__      ubinascii         urequests
+_thread           neopixel          ucollections      uselect
+_uasyncio         network           ucryptolib        usocket
+_webrepl          ntptime           uctypes           ussl
+builtins          onewire           uerrno            ustruct
+cmath             rp2               uhashlib          usys
+dht               uarray            uheapq            utime
+ds18x20           uasyncio/__init__ uio               uwebsocket
+framebuf          uasyncio/core     ujson             uzlib
+Plus any modules on the filesystem
+None
+push> 
+push> exec os.listdir()
+['bin', 'boot.py', 'lib', 'push.py', 'pushvm.py', 'pushvm2.py', 'tmp']
+push> 
+
+
 

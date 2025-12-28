@@ -1,4 +1,3 @@
-<pre>
 pushvm   
 
 Tested on ESP32 and Raspberry Pi Pico W
@@ -15,9 +14,7 @@ There is now an installer ([xpkg](https://github.com/elahtrebor/xpkg)) found in 
 This will install pushvm, the xpkg package manager and prompt to setup networking.
 All you have to do is copy install_pushvm.py to the board and run : import install_pushvm.py
 
-
 <pre>
-
 Here is a demo:
 
 >>> import pushvm

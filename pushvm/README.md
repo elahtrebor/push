@@ -9,9 +9,9 @@ This also gives a rich syntax similar to bash allowing you to
 set variables and create flow control (if, while, break , continue)
 </pre>
 Note: Supports a package manager called xpkg 
-found at [xpkg](https://github.com/elahtrebor/xpkg)
+found at [install_pushvm,py](https://github.com/elahtrebor/push/blob/main/pushvm/install_pushvm.py)
 
-There is now an installer found in the pushvm directory called install_pushvm.py
+There is now an installer ([xpkg](https://github.com/elahtrebor/xpkg)) found in the pushvm directory called install_pushvm.py
 This will install pushvm, the xpkg package manager and prompt to setup networking.
 All you have to do is copy install_pushvm.py to the board and run : import install_pushvm.py
 

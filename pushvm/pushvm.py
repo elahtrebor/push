@@ -830,8 +830,7 @@ class VM:
                     return runfn([cmd] + list(args), input_data)
             except Exception:
                 pass
-            return "Error: command not found: %s
-" % cmd
+            return "Error: command not found: %s" % cmd
         _CURRENT_VM = self
         return fn(args, input_data)
 

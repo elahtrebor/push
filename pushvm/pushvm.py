@@ -830,7 +830,8 @@ class VM:
                     return runfn([cmd] + list(args), input_data)
             except Exception:
                 pass
-            return "Error: command not found: %s" % cmd
+            return "Error: command not found: %s
+" % cmd
         _CURRENT_VM = self
         return fn(args, input_data)
 
@@ -866,9 +867,6 @@ def cmd_sleep(args, input_data):
     if not args:
         return ""
 
-def cmd_modules(args, input_data):
-    output = str(help("modules"))
-    return output
 
 def cmd_run(args, input_data):
     # run <module> [args...]
@@ -878,6 +876,29 @@ def cmd_run(args, input_data):
         return "run: usage run <module> [args...]\n"
     modname = args[0]
     argv = [str(a) for a in args[1:]]
+
+def cmd_reload(args, input_data):
+    # reload <module> [module2 ...]
+    # Removes modules from sys.modules so the next import picks up file changes.
+    # Useful when editing /lib/*.py tools during development.
+    if not args:
+        return "reload: usage reload <module> [module2 ...]\n"
+
+    removed = []
+    for name in args:
+        modname = name
+        if modname.endswith(".py"):
+            modname = modname[:-3]
+        try:
+            if modname in sys.modules:
+                del sys.modules[modname]
+                removed.append(modname)
+        except Exception:
+            pass
+
+    if not removed:
+        return "reload: nothing to do\n"
+    return "reloaded: " + " ".join(removed) + "\n"
 
     # Allow "foo.py" as module name
     if modname.endswith(".py"):
@@ -1339,7 +1360,6 @@ def make_vm():
         "connect": cmd_connect,
         "ifconfig": cmd_ifconfig,
         "edit": cmd_edit,
-        "modules": cmd_modules,
 
         # extras
         "echo": cmd_echo,
@@ -1357,6 +1377,7 @@ def make_vm():
         # sleep
         "sleep": cmd_sleep,
         "run": cmd_run,
+        "reload": cmd_reload,
 
         # job control
         "jobs": cmd_jobs,
@@ -1509,5 +1530,4 @@ def repl():
 
 if __name__ == "__main__":
     repl()
-
 

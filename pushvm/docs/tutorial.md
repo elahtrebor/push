@@ -225,3 +225,23 @@ Hello World
 push> 
 </pre>
 
+Note: if you are making multiple changes to a script you should probably reload the environment using the reload command with your script name minus the .py extension Example:
+
+<pre>
+
+push> hello
+Hello World 2
+push> 
+push> reload hello
+attempting to reload/refresh hello
+reloaded hello
+push> 
+push> hello
+Hello World 3
+push> 
+push> exit
+
+</pre>
+
+Reloading is needed because your script is read into micropythons internal memory and your script is registered by its name. The reload command deletes your script from micropythons memory and the next time you call your script it gets re read into micropythons memory and associated again.
+

@@ -4,16 +4,15 @@
 This tutorial covers installation and operation of the shell. 
  The installer portion walks though using the installer which gives you the package manager and sets up the lib directory as well as optionally gives you the ability to setup networking that automatically connects on boot.
 
-Wny use push? When I first started using ESP32 and RPI Pico I was amazed that micropython would run on them and learned that the devices later supported networking which opens up a lot of doors for capability. When I used thonny and webrepl I got a chance to interact with the python REPL and learned that many micropython library functions allowed you to do the equivilant actions like on regular operating systems such as list files. In micropython you would import the os library and use os.listdir() from the REPL to list files. I soon found that typing os.listdir() got tiring and also missed the linux shell capabilities. I then found myself building a crude shell that would take the input string "ls" and run os.listdir() in python. I found many library calls to read and manipulate files, control networking /sockets, and other useful utilities. I wanted to build a shell that doesnt solve world hunger but helps elevate capabilities a little
-.
-Wny use push? When I first started using ESP32 and RPI Pico I was amazed that micropython would run on them and learned that the devices later supported networking which opens up a lot of doors for capability. When I used thonny and webrepl I got a chance to interact with the python REPL and learned that many micropython library functions allowed you to do things like on regular operating systems such as list files in python you would use os.listdir() from the REPl. I soon found that got tired of typing os.listdir and also missed the linux shell capabilities and then found myself building a crude shell that would take the input string "ls" and run os.listdir() in python. I found many library calls to read and manipulate files, control networking /sockets, and other useful utilities. I then wanted to try to build a shell for the microcontroller which doesnt solve world hunger but helps elevate capabilities and create convenience.  This started as a one file loop taking input and running commands, then later added fake pipes and redirect, and now evolved to a VM.
+Wny use push? When I first started using ESP32 and RPI Pico I was amazed that micropython would run on them and learned that the devices later supported networking which opens up a lot of doors for capability. When I used thonny and webrepl I got a chance to interact with the python REPL and learned that many micropython library functions allowed you to do the equivilant actions like on regular operating systems such as list files. In micropython you would import the os library and use os.listdir() from the REPL to list files. I soon found that typing os.listdir() got tiring and also missed the linux shell capabilities. I then found myself building a crude shell that would take the input string "ls" and run os.listdir() in python. I found many library calls to read and manipulate files, control networking /sockets, and other useful utilities. I wanted to build a shell that doesnt solve world hunger but helps elevate capabilities a little.
+
 
  What are some of the things Push makes simple?
 
 1. Allows you to easily scan wifi and connect to it with a couple of commands. And if you want your microcontroller to automatically connect to your WIFI router, the installer will help you do that.
 2. Read files on disk easily using cat <yourfile>
 3. Filter things easily by using grep.
-4. Run background jobs as the VM implements time slicing.
+4. Run background jobs as the VM implements coprocessing.
 
 
 
